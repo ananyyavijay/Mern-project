@@ -15,4 +15,11 @@ app.use(express.urlencoded({extended: true, limit: "16kb"})) //to handel data co
 app.use(express.static("public"))  //to handel public asset file(img, pdf)
 app.use(cookieParser()) //to handel cookies from user browser i.e accept/set cookies
 
+//routes import
+import userRouter from './routes/user.routes.js'
+
+//routes decleration
+app.use("/api/v1/users", userRouter)
+
+
 export { app };
