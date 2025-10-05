@@ -5,19 +5,18 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const registerUer = asyncHandler(async (req, res) => {
-    res.status(200).json({
-        message: "hello from Ananya"
-    })
+    // res.status(200).json({
+    //     message: "hello from Ananya"
+    // })
 
     const {fullName, email,username, password} = req.body
-    console.log("email: ", email);
 
     if ([fullName, email, username, password].some((feild) => feild?.trim() === "")) 
     {
         throw new ApiError(400, "All feilds are required")
     }
 
-    const existedUser = User.findOne({   //checks if the user with the same email or username already exists
+    const existedUser = await User.findOne({   //checks if the user with the same email or username already exists
         $or: [{username}, {email}]
     })
 
@@ -25,8 +24,16 @@ const registerUer = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User already exists with the same email or username")
     }
 
+    console.log(req.files);
+    
+
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+     let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar image is required")
@@ -48,7 +55,7 @@ const registerUer = asyncHandler(async (req, res) => {
         username: username.toLowerCase()
     })
 
-    const createdUser = await user.findById(user._id).select("-password -refreshToken")
+    const createdUser = await User.findById(user._id).select("-password -refreshToken")
 
     if (!createdUser) {
         throw new ApiError(500, "Something went wrong while creating the user")
